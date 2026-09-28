@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎄 귀여운 크리스마스 트리 꾸미기</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html2canvas for downloading image -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Cute Korean Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Jua', sans-serif;
+            background-color: #0f172a; /* Fallback dark bg */
+            touch-action: manipulation;
+            margin: 0;
+            overflow: hidden; /* Prevent scrolling, act like an app */
+        }
+
+        /* Snow animation */
+        .snow {
+            position: absolute;
+            top: -50px;
+            color: white;
+            user-select: none;
+            pointer-events: none;
+            font-size: 1.5rem;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Capture area - Full screen night sky */
+        #capture-area {
+            background: linear-gradient(to bottom, #0f172a, #1e3a8a, #312e81);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Ornament styling */
+        .ornament-btn {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s, box-shadow 0.2s;
+            flex-shrink: 0;
+            border-radius: 50%;
+            /* 이모티콘 잘림 방지를 위한 폰트 및 줄간격 설정 */
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+            line-height: normal;
+        }
+        .ornament-btn.selected {
+            transform: scale(1.3);
+            background-color: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 15px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .placed-ornament {
+            position: absolute;
+            cursor: grab;
+            user-select: none;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+            /* 이모티콘 잘림 방지를 위한 폰트 및 줄간격 설정 */
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+            line-height: normal;
+            white-space: nowrap;
+        }
+        .placed-ornament:active {
+            cursor: grabbing;
+        }
+
+        /* Hide scrollbar for the horizontal palette but allow scroll */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Button interactions */
+        .btn-cute {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-cute:hover {
+            transform: translateY(-2px);
+        }
+        .btn-cute:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- The Capture Area covers the whole screen -->
+    <div id="capture-area" class="flex flex-col items-center justify-center">
+        <!-- Background Snow Container -->
+        <div id="snow-container" class="absolute inset-0 pointer-events-none z-10"></div>
+        
+        <!-- Hand-drawn style Tree Container (Shifted up slightly to avoid bottom UI) -->
+        <div class="relative w-full max-w-lg aspect-[3/4] flex items-center justify-center pointer-events-none z-20 -translate-y-12 sm:-translate-y-16">
+            
+            <!-- Hand-drawn SVG Tree -->
+            <svg viewBox="0 0 200 250" class="w-[85%] h-[85%] drop-shadow-2xl overflow-visible">
+                <!-- Trunk (Curved and organic) -->
+                <path d="M 88 230 Q 90 200 92 190 L 108 190 Q 110 200 112 230 Z" 
+                      fill="#6D4C41" stroke="#4E342E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                
+                <!-- Bottom Tier (Bumpy edges, hand-drawn feel) -->
+                <path d="M 25 185 C 10 200 40 205 60 195 C 75 200 95 205 110 195 C 125 205 145 205 160 195 C 175 205 190 190 175 180 C 150 130 130 110 100 105 C 70 110 50 130 25 185 Z" 
+                      fill="#2E7D32" stroke="#1B5E20" stroke-width="3" stroke-linejoin="round" />
+                <!-- Bottom Tier Highlights -->
+                <path d="M 40 185 Q 60 195 80 185 Q 100 195 120 185 Q 140 195 160 185" 
+                      fill="none" stroke="#4CAF50" stroke-width="4" stroke-linecap="round" opacity="0.5"/> 
+
+                <!-- Middle Tier -->
+                <path d="M 40 135 C 25 150 50 155 70 145 C 85 150 100 155 115 145 C 130 155 150 155 165 145 C 175 150 180 135 160 125 C 140 85 120 70 100 65 C 80 70 60 85 40 135 Z" 
+                      fill="#388E3C" stroke="#1B5E20" stroke-width="3" stroke-linejoin="round" />
+                <!-- Middle Tier Highlights -->
+                <path d="M 55 135 Q 75 145 95 135 Q 115 145 135 135 Q 150 145 155 135" 
+                      fill="none" stroke="#81C784" stroke-width="4" stroke-linecap="round" opacity="0.5"/> 
+
+                <!-- Top Tier -->
+                <path d="M 60 85 C 45 100 70 105 85 95 C 95 100 110 105 120 95 C 130 105 145 100 140 85 C 125 50 115 35 100 20 C 85 35 75 50 60 85 Z" 
+                      fill="#4CAF50" stroke="#1B5E20" stroke-width="3" stroke-linejoin="round" />
+                <!-- Top Tier Highlights -->
+                <path d="M 70 85 Q 90 95 105 85 Q 120 95 130 85" 
+                      fill="none" stroke="#A5D6A7" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+            </svg>
+
+        </div>
+    </div>
+
+    <!-- Bottom UI Dock (Positioned over the capture area, will be hidden during download) -->
+    <div id="ui-container" class="fixed bottom-0 left-0 w-full bg-white/10 backdrop-blur-md border-t border-white/20 rounded-t-3xl pt-4 pb-6 flex flex-col items-center gap-2 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.3)]">
+        
+        <!-- Info Text -->
+        <p class="text-white/80 text-sm md:text-base drop-shadow-md mb-1">
+            장식을 선택하고 콕 찍어보세요! (더블 터치: 삭제)
+        </p>
+
+        <!-- Horizontal Palette (Increased vertical padding to prevent clipping) -->
+        <div id="palette" class="flex flex-row overflow-x-auto w-full max-w-3xl px-4 py-6 gap-3 hide-scrollbar items-center">
+            <!-- Ornaments injected via JS -->
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-4 mt-1">
+            <button id="btn-clear" class="btn-cute px-5 py-2.5 bg-rose-500/80 text-white rounded-full text-lg shadow-lg border border-rose-400 hover:bg-rose-500 backdrop-blur-sm">
+                🗑️ 싹 지우기
+            </button>
+            <button id="btn-download" class="btn-cute px-6 py-2.5 bg-emerald-500 text-white rounded-full text-lg shadow-lg shadow-emerald-500/40 border border-emerald-400 hover:bg-emerald-400 backdrop-blur-sm">
+                📸 사진 찍기
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const ornaments = [
+            '⭐', '🌟', '✨', 
+            '🔴', '🟡', '🟢', '🔵', '🟣', '💖', '💝',
+            '🎀', '🔔', '🍬', '🍭', '🍫', '🍪',
+            '🎁', '🧸', '🦌', '⛄', '❄️', '🕯️', '🧦'
+        ];
+
+        let selectedOrnament = '⭐'; // Default
+        let zIndexCounter = 30; // Start higher than background and tree
+
+        const palette = document.getElementById('palette');
+        const captureArea = document.getElementById('capture-area');
+        const snowContainer = document.getElementById('snow-container');
+        const uiContainer = document.getElementById('ui-container');
+
+        // Continuous Snow Generation
+        function createSnow() {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snow');
+            // Mix of characters for variety
+            snowflake.textContent = Math.random() > 0.5 ? '❄️' : '❅'; 
+            snowflake.style.left = Math.random() * 100 + 'vw';
+            snowflake.style.animationDuration = Math.random() * 4 + 3 + 's';
+            snowflake.style.opacity = Math.random() * 0.5 + 0.2;
+            snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+            
+            snowContainer.appendChild(snowflake);
+
+            setTimeout(() => {
+                if (snowflake.parentNode) {
+                    snowflake.remove();
+                }
+            }, 7000);
+        }
+        setInterval(createSnow, 250);
+
+        // Render Palette
+        ornaments.forEach(emoji => {
+            const btn = document.createElement('button');
+            btn.className = `ornament-btn text-3xl md:text-4xl w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full hover:bg-white/20 ${emoji === selectedOrnament ? 'selected' : ''}`;
+            btn.textContent = emoji;
+            btn.onclick = () => {
+                document.querySelectorAll('.ornament-btn').forEach(el => el.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedOrnament = emoji;
+            };
+            palette.appendChild(btn);
+        });
+
+        // Place Ornament on Tree/Background
+        captureArea.addEventListener('pointerdown', (e) => {
+            // Prevent placing if clicking on an already placed ornament or if clicking on the UI dock
+            if (e.target.classList.contains('placed-ornament') || 
+                uiContainer.contains(e.target)) {
+                return;
+            }
+
+            const x = e.clientX;
+            const y = e.clientY;
+
+            addOrnamentToTree(selectedOrnament, x, y);
+        });
+
+        function addOrnamentToTree(emoji, x, y) {
+            const el = document.createElement('div');
+            el.className = 'placed-ornament text-4xl md:text-5xl';
+            el.textContent = emoji;
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            el.style.zIndex = zIndexCounter++;
+            
+            setupDragAndDrop(el);
+            captureArea.appendChild(el);
+        }
+
+        function setupDragAndDrop(el) {
+            let isDragging = false;
+            let hasMoved = false; 
+            let startX, startY, initialLeft, initialTop;
+            
+            let lastTap = 0;
+
+            el.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                e.stopPropagation(); 
+                
+                el.style.zIndex = zIndexCounter++;
+                isDragging = true;
+                hasMoved = false;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                initialLeft = parseFloat(el.style.left || 0);
+                initialTop = parseFloat(el.style.top || 0);
+
+                el.setPointerCapture(e.pointerId);
+            });
+
+            el.addEventListener('pointermove', (e) => {
+                if (!isDragging) return;
+                
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                
+                if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+                    hasMoved = true;
+                }
+
+                el.style.left = `${initialLeft + dx}px`;
+                el.style.top = `${initialTop + dy}px`;
+            });
+
+            el.addEventListener('pointerup', (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                el.releasePointerCapture(e.pointerId);
+
+                // Double tap check
+                if (!hasMoved) {
+                    const currentTime = new Date().getTime();
+                    const tapLength = currentTime - lastTap;
+                    if (tapLength < 400 && tapLength > 0) {
+                        el.remove(); // Double tapped
+                    } else {
+                        // Feedback bounce on single tap
+                        el.style.transform = 'translate(-50%, -50%) scale(1.2)';
+                        setTimeout(() => {
+                            if(document.body.contains(el)) el.style.transform = 'translate(-50%, -50%) scale(1)';
+                        }, 150);
+                    }
+                    lastTap = currentTime;
+                }
+            });
+        }
+
+        // Clear all placed ornaments
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            const placedOrnaments = captureArea.querySelectorAll('.placed-ornament');
+            placedOrnaments.forEach(o => o.remove());
+        });
+
+        // Download Image (Hide UI before capture)
+        document.getElementById('btn-download').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-download');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ 찰칵...';
+            btn.disabled = true;
+
+            // Hide the UI dock temporarily so it's not in the screenshot
+            uiContainer.style.display = 'none';
+
+            try {
+                // Wait briefly to ensure UI is hidden
+                await new Promise(r => setTimeout(r, 100));
+                
+                const canvas = await html2canvas(captureArea, {
+                    scale: 2, 
+                    backgroundColor: '#0f172a', // Fallback color
+                    useCORS: true
+                });
+
+                const link = document.createElement('a');
+                link.download = 'my-cute-tree.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (err) {
+                console.error("Error creating image: ", err);
+                alert("이미지 저장 중 오류가 발생했어요! 😢");
+            } finally {
+                // Restore the UI dock
+                uiContainer.style.display = 'flex';
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
